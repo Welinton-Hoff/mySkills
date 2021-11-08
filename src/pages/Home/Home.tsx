@@ -5,6 +5,7 @@ import {
   SafeAreaView,
   TextInput,
   FlatList,
+  Alert,
 } from 'react-native'
 
 import { styles } from './styles'
@@ -12,14 +13,34 @@ import { styles } from './styles'
 import { Button } from '../../components/Button/Button'
 import { SkillCard } from '../../components/SkillCard/SkillCard'
 
+interface SkillData {
+  id: string;
+  name: string;
+}
+
 export function Home() {
 
   const [newSkill, setNewSkill] = useState('')
-  const [mySkills, setMySkills] = useState([])
+  const [mySkills, setMySkills] = useState<SkillData[]>([])
   const [gretting, setGretting] = useState('')
 
   function handleAddNewSkill() {
-    setMySkills(oldState => [...oldState, newSkill])
+
+    if (newSkill.length > 0) {
+      const data = {
+        id: String(new Date().getTime()),
+        name: newSkill
+      }
+
+      setMySkills(oldState => [...oldState, data])
+    }
+    else Alert.alert('Insira uma nova skill!')
+  }
+
+  function handleRemoveSkill(id: string) {
+    setMySkills(oldState => oldState.filter(
+      skill => skill.id !== id
+    ))
   }
 
   useEffect(() => {
@@ -43,15 +64,21 @@ export function Home() {
         onChangeText={setNewSkill}
       />
 
-      <Button onPress={handleAddNewSkill} />
+      <Button
+        title="Add skill"
+        onPress={handleAddNewSkill}
+      />
 
       <Text style={[styles.title, { marginVertical: 50 }]}>My Skills</Text>
 
       <FlatList
         data={mySkills}
-        keyExtractor={item => item}
+        keyExtractor={item => item.id}
         renderItem={({ item }) => (
-          <SkillCard skill={item} />
+          <SkillCard
+            skill={item.name}
+            onPress={() => handleRemoveSkill(item.id)}
+          />
         )}
       />
 
